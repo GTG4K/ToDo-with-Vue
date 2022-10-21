@@ -55,6 +55,14 @@ export default {
   cursor: pointer;
 }
 
+.light .todo-list-item:hover {
+  background-color: hsl(0, 0%, 89%);
+}
+
+.light .todo-list-item {
+  background-color: hsl(0, 0%, 98%);
+}
+
 .todo-list-item:hover {
   background-color: hsl(237, 21%, 21%);
 }
@@ -69,6 +77,10 @@ export default {
 .todo-list-item p.completed {
   text-decoration-line: line-through;
   color: hsl(233, 14%, 35%);
+}
+
+.light .todo-list-item p {
+  color: hsl(235, 19%, 35%);
 }
 
 .todo-list-item i {
