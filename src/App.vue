@@ -18,6 +18,7 @@
         placeholder="Create a new todo.."
         v-on:keyup.enter="todoPush"
         v-model="todoInput"
+        :class="todoInputClass"
       />
     </div>
 
@@ -30,16 +31,36 @@
           v-bind:id="todo.id"
           v-bind:completed="todo.completed"
           v-on:toggle-completed="toggleCompleted"
+          v-on:delete-todo="deleteTodo"
         ></to-do>
       </ul>
       <div class="footer-li">
-        <span>5 items left</span>
+        <span v-if="todoList.length === 0">no tasks</span>
+        <span v-else-if="todoList.length === 1"> 1 task</span>
+        <span v-else> {{ todoList.length }} Tasks </span>
         <ul class="todo-actions">
-          <li>All</li>
-          <li>Active</li>
-          <li>Completed</li>
+          <li
+            :class="{ selected: display === 'all' }"
+            v-on:click="switchDisplay('all')"
+          >
+            All
+          </li>
+          <li
+            :class="{ selected: display === 'active' }"
+            v-on:click="switchDisplay('active')"
+          >
+            Active
+          </li>
+          <li
+            :class="{ selected: display === 'completed' }"
+            v-on:click="switchDisplay('completed')"
+          >
+            Completed
+          </li>
         </ul>
-        <span class="clear-completed">Clear Completed</span>
+        <span v-on:click="clearCompleted" class="clear-completed"
+          >Clear Completed</span
+        >
       </div>
     </div>
   </main>
@@ -53,6 +74,7 @@ export default {
       lastID: 0,
       display: "all",
       todoInput: "",
+      inputErrorAnimation: false,
       todoList: [],
     };
   },
@@ -62,12 +84,20 @@ export default {
       return this.lastID;
     },
     todoPush() {
-      const newObject = {
-        id: this.nextID(),
-        text: this.todoInput,
-        completed: false,
-      };
-      this.todoList.push(newObject);
+      if (this.todoInput.length > 0) {
+        const newObject = {
+          id: this.nextID(),
+          text: this.todoInput,
+          completed: false,
+        };
+        this.todoList.push(newObject);
+        this.todoInput = "";
+      } else {
+        this.inputErrorAnimation = true;
+        setTimeout(function () {
+          this.inputErrorAnimation = false;
+        }, 200);
+      }
     },
     toggleCompleted(todoID) {
       for (let i = 0; i < this.todoList.length; i++) {
@@ -77,8 +107,38 @@ export default {
         }
       }
     },
+    deleteTodo(todoID) {
+      let index = 0;
+      for (let i = 0; i < this.todoList.length; i++) {
+        if (this.todoList[i].id === todoID) {
+          this.todoList.splice(index, 1);
+          break;
+        }
+        index++;
+      }
+    },
+    clearCompleted() {
+      let index = 0;
+      for (let i = 0; i < this.todoList.length; i++) {
+        for (let i = 0; i < this.todoList.length; i++) {
+          if (this.todoList[i].completed === true) {
+            this.todoList.splice(index, 1);
+            break;
+          }
+          index++;
+        }
+        index = 0;
+      }
+    },
+    switchDisplay(type) {
+      this.display = type;
+    },
   },
-  computed: {},
+  computed: {
+    todoInputClass() {
+      return { inputErrorAnimation: this.inputErrorAnimation === true };
+    },
+  },
   watch: {},
 };
 </script>
@@ -152,6 +212,23 @@ header > i {
   caret-color: hsl(220, 98%, 61%);
 }
 
+.inputErrorAnimation {
+  animation-name: inputEmpty;
+  animation-duration: 0.2s;
+}
+
+@keyframes inputEmpty {
+  33% {
+    padding: 0 0 0 0;
+  }
+  66% {
+    padding: 0 0 0 10px;
+  }
+  100% {
+    padding: 0 10px 0 0;
+  }
+}
+
 .checkbox {
   position: relative;
   margin: 0px 25px;
@@ -196,33 +273,6 @@ div.checkbox > label.completed {
   cursor: pointer;
 }
 
-.todo-list-item {
-  width: 100%;
-  height: 3.5rem;
-  background-color: hsl(235, 24%, 19%);
-
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid hsl(233, 14%, 35%);
-  cursor: pointer;
-}
-
-.todo-list-item:hover {
-  background-color: hsl(237, 21%, 21%);
-}
-
-.todo-list-item:first-child {
-  border-radius: 6px 6px 0 0;
-}
-
-.todo-list-item > p {
-  color: hsl(234, 39%, 85%);
-}
-.todo-list-item > p.completed {
-  text-decoration-line: line-through;
-  color: hsl(233, 14%, 35%);
-}
-
 .footer-li {
   width: 100%;
   height: 3.5rem;
@@ -264,5 +314,14 @@ input[type="checkbox"] {
 .clear-completed:hover {
   color: hsl(234, 39%, 85%);
   cursor: pointer;
+}
+
+@keyframes example {
+  from {
+    background-color: red;
+  }
+  to {
+    background-color: yellow;
+  }
 }
 </style>
